@@ -2,3 +2,6 @@ gfortran
 libatlas-base-dev
 liblapack-dev
 libblas-dev
+gfortran
+g++
+gcc

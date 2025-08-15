@@ -1,2 +1,4 @@
 https://github.com/heroku/heroku-buildpack-apt
 https://github.com/heroku/heroku-buildpack-python
+heroku buildpacks:set https://github.com/heroku/heroku-buildpack-apt
+heroku buildpacks:add --index 1 heroku/python
