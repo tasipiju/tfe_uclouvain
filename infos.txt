@@ -1,0 +1,1391 @@
+*********Fonctionnement ds séries temporelles et des modèles*********
+(Vidéo d'un data atelier de datascientest)
+
+#Séries temporelles
+1- C'est quoi une série temporelles stationnaire
+    Stationnarité: les propriétés statistiques ne varient pas aucours du temps
+        Moyenne (constante)
+        Variance (mesure de dispersion constante)
+    Non-Stationnarité: contraire
+
+2- Décomposotion d'une série temporelles
+    Tendance: notée Tt est la dynamique globale de la série
+    Saisonnalité: notée St est un cycle
+    Erreur ou Résidus ou Bruit: notée Ɛt est un imprévue (catrastrophe naturelle ou recession)
+    Le résidu du modèle correspond à la partie de la série temporelle que la décomposition 
+        ne permet pas d’expliquer
+
+3- Décomposotion de base
+    Additive
+        Xt = Tt + St + Ɛt
+        Variation avec amplitude constante
+    Multiplicative
+        Xt = Tt x St x Ɛt
+        Variation avec amplitude croissante au cours du temps
+
+4-Analyse des résidus
+    Vérifier l'autocorrélation dans les résidus (Test de Ljung-Box)
+    Normalité (Test de Shapiro-Wilk)
+    Graphiqu de autocorrélation des résidus (ACF et PACF)
+    
+5-Lissage
+    C'est un filtrage
+    L'objectif est de retirer le bruit et révéler le signal existant
+    On identifie la tendance et les autres composants de la série
+    On souhaite réaliser des prédictions
+    Types:
+        Moyenne mobile => permet de déterminer la tendance de la série
+            Moyenne = moyenne des x valeurs précédentes
+            Centré = 3 valeurs centrées autour d'une
+        Exponentielle =>  
+            Xo = xo
+            X1 = aX1 + (1-a)Xo
+    NB: d'autres méthodes => double ou triple lissage qui permettent d'identifier la 
+        tendance et la saisonnalité
+        Tous ces modèles sont limités.
+
+6-Modèles plus évoluées (AR, MA, ARMA, ARIMA, SARIMA)
+    Stationnarité: moyenne, variance et covariance ne dépendenent pas du temps
+    TOUS les modèles précédents doivent etre stationnaire
+
+    "Modèle AR"
+        AR = Autoregressive modèle
+        Régession à partie des instants (termes) passés
+        Formule => Xt = φO + φXt-1 + ...... + φXt-p + Ɛt
+        ATTENTION: Vérifer que la série est stationnaire
+        Paramètres: p (Nombre de valeurs passées de la série utilisées pour prédire la valeur actuelle.)
+            ACF : tends vers 0  
+            PACF: S'annule après l'ordre p
+        Documentation =>
+            https://www.geeksforgeeks.org/autoregressive-ar-model-for-time-series-forecasting/
+            https://machinelearningmastery.com/autoregression-models-time-series-forecasting-python/
+            https://medium.com/@karen.mossoyan/building-an-autoregression-model-for-time-series-analysis-in-python-49402bdd6d08
+            https://blog.quantinsti.com/autoregression/ (finalise sur ARIMA)
+
+    "Modèle MA"
+        MA = Moving Average
+        Regression sur les erreurs (les séries où les perturbations aléatoires récentes influencent la valeur présente.)
+        Formule => Xt = μ + Ɛt + θ1Ɛt-1 + ..... + θqƐt-q
+        Paramètres: q (Nombre de termes d’erreur (résidus) passés utilisés pour prédire la valeur actuelle.)
+            ACF : S'annule après l'odre q 
+            PACF: tends vers 0
+        Documentation =>
+            https://www.kaggle.com/code/carlmcbrideellis/time-series-a-simple-moving-average-ma-model
+            https://blog.gopenai.com/guide-to-time-series-analysis-with-python-2-moving-average-process-784328325e5f
+            https://www.geeksforgeeks.org/understanding-the-moving-average-ma-in-time-series-data/
+
+    "Modèle ARMA"
+        Composition des 2 précédents (AR et MA)
+        ATTENTION: Vérifer que la série est stationnaire
+        Formule => Xt = φO + φ1Xt-1 + ..... + φqƐt-q + Ɛt + φ1Ɛt-1 + ..... + φqƐt-q
+        NB: la série doit etre stationnaire pour utiliser ce modèle
+        Paramètres dans l'ordre: p (valeurs passées) et q (résidus)
+            ACF : tends vers 0
+            PACF: tends vers 0
+        Un passage au log (peut suffire)
+            Sinon on la différencie => stationnaire (ARIMA)
+        Documentation =>
+
+    "Modèle ARIMA"
+        Utilité => permet de différencier une série pour la rendre stationnaire
+        I = ordre d'intégration ou ordre de différenciation nécessaire pour obtenir la stationnarité
+            On fera un test de Dickey-Fuller pour vérifier la stationnarité
+        Paramètres dans l'ordre : 
+            p 
+            q
+            d (Nombre de fois que la série doit être différenciée pour la rendre stationnaire)
+        NB: il est idéal pour des séries temporelles non stationnaires
+        Théorie => https://github.com/LeCoinStat/100JoursDeML/blob/main/07_Series_Temporelles/01_ARIMA/01_Modele_Arima.ipynb
+        Documentation =>
+
+    "Modèle SARIMA"
+        Il se distingue du modèle ARIMA par la prise en compte de la saisonnalité
+        Documentation =>
+        Elle ajuste le modèle statistique à tes données :
+        Pour un ARIMA(p, d, q), cela signifie trouver les meilleurs coefficients pour la partie auto-régressive (p), 
+            la moyenne mobile (q), et éventuellement la constante, afin de minimiser l’erreur entre les valeurs 
+            prédites et les valeurs réelles.
+        Elle utilise des méthodes d’optimisation (comme le maximum de vraisemblance) pour trouver ces paramètres 
+            automatiquement à partir de tes données.
+        Le résultat est un objet "ajusté" (fitted model), qui contient les paramètres estimés et permet de faire des prédictions, d’analyser les résidus, etc.
+
+7-Passage au log
+    Role: permet parfois de se passer de la différenciation
+    Comment? l'amplitude n'est plus croissante
+        en gros on passe d'un modèle multiplicatif à un modèle additif
+    Si le graphe n'est pas toujours différencier, on fait la différenctionation (I)
+
+8-Comment sélectionner le bon modèle?
+    Méthode de BoX-Jenkins
+        Auto corrélation:
+            C'est la vérification de la correlation d'une variable avec elle meme à différent moment
+        ACF
+            Corrélation de Pearson entre les valeurs de la série
+            Inc: entre xt et xt-2, il prend en compte xt-1, ce qui est un problème
+        PACF
+            Corrélation de Pearson entre les valeurs de la série SANS l'impact des autres valeurs de la série
+            C'est un modèle linéaire avec des coffecient a1, a2 etc....
+            Xt = a1 Xt-1 + a2 Xt-2 + a1 Xt-3 + Vt
+
+9-Les critères d'informations
+    Objectif => les minimiser au maximum
+    Il permettent de décrire le modèle avec le minimum de variable/valeur possible
+    Ils sont:
+        AIC = 2k - 2ln(K)
+        BIC = -2ln(L) + k.ln(N)
+        HQC = -2Lmax + 2kln(ln(n))
+            k = nombre de variables du modèle
+            L = maximum de vraissemblance
+            N = nombre d'observation des données
+
+10-Métriques
+    MAP (pourcentage d'erreurs sur les prévision du modèle)
+
+
+
+
+
+*********** Synthèse des méthodes identifiées **********
+Modèle	- Application	- Performance
+ARIMA	 - Prévision du PIB, inflation, crises financières	- Précision élevée pour tendances à court terme
+RNN/LSTM	- Prévision boursière et indicateurs macro - Meilleure capture des non-linéarités
+Modèles hybrides	- Combinaison ARIMA + ML (forêts/SVM)	- Robustesse accrue pendant les crises
+
+
+
+
+
+*********** Quelques definitions complexes **********
+Graphe ACF => L'ACF mesure la corrélation entre une séquence et elle-même à"
+    "différentes périodes de temps. Autrement dit, elle permet d'évaluer la similitude entre"
+    "les observations en fonction du décalage de temps entre elles
+
+La PACF est une corrélation qui exclut l'effet des termes intermédiaires. "
+    "C'est-à-dire qu'elle est une mesure de la corrélation entre des observations à un "
+    "certain intervalle, en tenant compte des valeurs à des intervalles plus courts.
+
+MSE (Mean Squared Error, Erreur Quadratique Moyenne)        MSE = (1/n) × Σ(yi - ŷi)²
+Mesure la moyenne des carrés des écarts entre les valeurs observées et les valeurs prédites.
+Signification : plus la valeur est faible, plus le modèle est précis. Le MSE pénalise 
+    fortement les erreurs importantes (car il élève les écarts au carré).
+
+RMSE (Root Mean Squared Error, Racine de l’Erreur Quadratique Moyenne)      RMSE = √(MSE) = √[(1/n) × Σ(yi - ŷi)²]
+C’est simplement la racine carrée du MSE.
+Signification : elle ramène l’erreur dans l’unité de la variable d’origine, 
+    ce qui facilite l’interprétation. Plus la valeur est faible, meilleure est la performance du modèle.
+
+MAE (Mean Absolute Error, Erreur Absolue Moyenne)       MAE = (1/n) × Σ|yi - ŷi|
+Mesure la moyenne des valeurs absolues des écarts entre les valeurs observées et les valeurs prédites.
+Signification : elle donne une idée de l’erreur moyenne, sans sur-pénaliser les gros écarts, 
+    contrairement au MSE
+
+R² Score (Coefficient de détermination) 
+    R² = 1 - (SS_res / SS_tot)
+    où SS_res = Σ(yi - ŷi)²  (somme des carrés des résidus)
+    et SS_tot = Σ(yi - ȳ)²   (somme totale des carrés)
+C'est la proportion de la variance expliquée par le modèle.
+Varie entre -∞ et 1
+R² = 1 : modèle parfait
+R² = 0 : modèle équivalent à la moyenne
+R² < 0 : modèle pire que la moyenne
+
+MAPE (Mean Absolute Percentage Error)       MAPE = (100/n) × Σ|((yi - ŷi) / yi)|
+C'est le pourcentage d'erreur absolue moyenne.
+Plus bas = meilleur
+
+Accuracy (Exactitude)
+C'est la proportion de prédictions correctes.
+Accuracy = (TP + TN) / (TP + TN + FP + FN)
+Varie entre 0 et 1
+Plus élevé = meilleur
+
+Precision.   Precision = TP / (TP + FP)
+Répond à : "Parmi les prédictions positives, combien sont correctes ?"
+Importante quand le coût des faux positifs est élevé
+Plus élevé = meilleur
+
+Recall (Sensibilité)        Recall = TP / (TP + FN)
+Répond à : "Parmi les vrais positifs, combien ont été détectés ?"
+Importante quand le coût des faux négatifs est élevé
+Plus élevé = meilleur
+
+Critère d'Information d'Akaike (AIC) : Mesure la qualité relative d'un modèle en tenant "
+    "compte de sa complexité. Un AIC plus faible indique un meilleur équilibre entre ajustement et simplicité.
+
+Critère d'Information Bayésien (BIC) : Semblable à l'AIC, mais pénalise davantage "
+    "la complexité du modèle. Un BIC plus faible est préférable.
+
+Le test de Ljung-Box teste l'absence d'autocorrélation dans les résidus. Nous voulons que "
+    "les résidus soient indépendants les uns des autres. Vérifier que les résidus suivent un bruit blanc
+Un résidu = différence entre valeur observée et valeur prédite
+
+Le test de Shapiro-Wilk permet de vérifier la normalité. L'aspect de normalité fait "
+    "référence à la distribution des résidus. Dans un bon modèle, nous attendons que les résidus "
+    "suivent une distribution normale
+
+
+
+
+
+
+******** Vidéo de datascientest sur les séries temporelles (avec le deep learning) ********
+1-Défintion d'une série temporelle
+    Def => séquence de donées collectées à intervalles réguliers à travers le temps
+    Objectif => identifier à travers des données les tendances, les cycles, des variations saisonnières
+        et utiliser toutes ces informations pour faire des prédictions
+    Exemples de séries temporelles:
+        Univariée => 
+            Cours de cloture quotidiens d'une action au fil du temps
+            Températures moyennes mensuelles à un endroit données
+        Multivariée =>
+            Cours quotidiens des actions et le volume de transactions au fil du temps
+            Mesures météorologiques horaires comprenant température, l'humidité et ka vitesse du vent
+
+2-Modèles pour l'analyse des séries temporelles
+    Modèles linéaires: (tendance et saisonnalité CLAIRES)
+        Modèles autorégressisfs (AR)
+        Modèles de moyenne mobile (MA)
+        Modèles de moyenne mobile intégrée autoregressive (ARIMA)
+        Modèles de moyennes mobiles intégrées autoregressives saisonnières (SARIMA)
+    Modèles: (on veut identifier des tendances COMPLEXES au sein des données)
+        Les réseaux de neuronnes récurrents (LSTM)
+
+3-Réseau de neuronnes récurrents (RNN)
+    Utilité des RNN: traiter des données séquentielles 
+    Caractéristique des RNN : capacité à conserver une mémoire des entrées précédentes.
+        On utilise des connexions "récurrentes"
+
+4-Avantages des RNN par rapport au modèles linéaires
+    Non-linéarité: quand les données présentent des relations complexes et non linéaires tel que des
+        changements abrupts, des cycles multiples ou des changements de tendance.
+    Prévision à long terme: ils peuvent capturer des dépendances à long terme entre les valeurs
+        passées et futures.
+    Analyse multivariée: capturent des interactions complexes entre les caractéristiques d'entrée 
+        et la variable cible.
+    Données irrégulières et manquantes
+
+5-Perceptron Vs Cellule récurrente
+    Comprendre le role de la fonction d'activation (il permet d'introduire la non-linéarité dans le modèle)
+        Définition => https://inside-machinelearning.com/fonction-dactivation-comment-ca-marche-une-explication-simple/
+        Les différents types => https://deeplylearning.fr/cours-theoriques-deep-learning/fonction-dactivation/
+    Avantage d'une cellule récurrente: retient l'information précédente (en mémoire) pour pouvoir
+        prédire la suite
+    Inconvénient: explosion du gradient lors de la déscente du gradient
+    Solution: introduction d'une cellute court terme => Cellule LSTM
+
+6-Cellule LSTM
+    Suivre ce lien pour en savoir plus 
+        https://datascientest.com/long-short-term-memory-tout-savoir#:~:text=L'architecture%20des%20LSTM&text=La%20cellule%20m%C3%A9moire%20d'un,retenir%20et%20celles%20%C3%A0%20oublier.
+    Comprendre les 7 couches en deep learning => https://inside-machinelearning.com/7-types-de-couches/
+
+7-documentation
+    Prévision classique
+        https://machinelearningmastery.com/mastering-time-series-forecasting-from-arima-to-lstm/#:~:text=LSTM%20is%20a%20type%20of,to%20scale%20of%20the%20data.
+        https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
+    Prévision du futures
+        https://stackoverflow.com/questions/69906416/forecast-future-values-with-lstm-in-python
+
+
+
+
+
+
+********* Comment optimiser le modèle?? **********
+1. Identifier les hyperparamètres à optimiser
+Pour un modèle LSTM, les principaux hyperparamètres sont :
+    Taille de la fenêtre temporelle (window size)
+    Nombre de couches LSTM
+    Nombre d’unités par couche
+    Fonctions d’activation
+    Taux d’apprentissage (learning rate)
+    Taille du batch
+    Nombre d’époques
+    Taux de Dropout
+    Type d’optimiseur (Adam, RMSprop, etc.)
+
+2. Choisir une méthode d’optimisation
+    A. Recherche exhaustive (Grid Search)
+        Tester toutes les combinaisons possibles d’un ensemble de valeurs pour chaque hyperparamètre.
+        Avantage : Simple à comprendre.
+        Inconvénient : Très coûteux en temps de calcul, surtout pour les réseaux profonds.
+    B. Recherche aléatoire (Random Search)
+        Tester des combinaisons aléatoires dans l’espace des hyperparamètres.
+        Plus efficace que le grid search pour des espaces de recherche larges
+    C. Algorithmes évolutifs (ex : Algorithme génétique)
+        Utilisent des principes de sélection naturelle pour explorer l’espace des solutions et améliorer progressivement les combinaisons d’hyperparamètres.
+    D. Outils spécialisés (Keras Tuner, Optuna, Hyperopt, etc.)
+        Automatisent et optimisent la recherche des meilleurs hyperparamètres en utilisant des stratégies avancées (Hyperband, Bayesian optimization…).
+        Keras Tuner est particulièrement adapté pour les modèles Keras/TensorFlow et les séries temporelles.
+
+
+
+
+
+
+
+********* TOUS sur les enviironnements virtuels **********
+    Video avec conda, vscode et jupiter => Créer des env virtuels de LeCoinStat
+créer un env virtuel
+    #python3.11 -m venv nom_ennv
+
+se deconnecter d'un env virtuel
+    #source mon_env/bin/activate
+    exemple: source .memoire/bin/activate
+
+sortir de son env virtuel ou le désactiver
+    #desactivate
+
+detecter les paquets et les extraire d'un env virtuel
+    #pip freeze > requirements.txt
+
+installer des paquets dans un env virtuel
+    #pip install -m requirements
+
+lister les paquets dans un env virtuel
+    #pip list
+
+
+
+
+
+******* How to unistall completely python ********
+    https://stackoverflow.com/questions/72005302/completely-uninstall-python-3-on-mac
+
+
+
+
+
+******** How to install brew on mac??? **********
+For those looking for a better solution for the MacBook M4(Sequoia 15.4.1) in 2025. Follow the steps:
+Open the terminal
+Enter the below command and press Enter:
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+Type your password and press Enter again
+After installation, we need to add Homebrew to our path with the following command:
+echo "export PATH=/opt/homebrew/bin:$PATH" >> ~/.zshrc
+
+
+
+
+
+******* Comment installer tensorflow (vers spécifique compatible => python 3.11) sous mac? ********
+    PROBLEME: tensorflow n'est pas compatible avec la version de python 3.13 (il faut 3.9 à 3.11)
+1- détecter sa version de:
+    python 3
+    pip
+2-suivre les étape suivantes:
+    Installer python 3.11.9
+        brew install pyenv  # Si pyenv n'est pas installé
+        pyenv install 3.11.9
+    Créer un environnement virtuel avec Python 2.11
+        python3.11 -m venv tensorflow_env
+        source tensorflow_env/bin/activate
+    Installer tensorflow
+        pip install --upgrade pip
+        pip install tensorflow
+        tester avec la commande => python -c "import tensorflow as tf; print(tf.__version__)"
+
+
+
+
+
+********** Installation de python + création finale de l'env .memoire etc.... ********
+////Installation
+#installer python 3.11
+brew install python@3.11
+#l'ajouter dans le PATH + source
+export PATH="/user/local/opt/python@3.11/bin:$PATH"
+alias python3="python3.11"
+alias pip3="pip3.11"
+source ~/.zshrc
+#vérification de la version
+python3.11 --version   ou python3 --version
+
+///// Creation de l'env
+# Désactive l'environnement s'il est actif
+deactivate
+# Supprime le dossier du venv
+rm -rf /Users/tasipiju/Documents/ucl-master-60-cour/2-Memoire/code-memoire/.memoire
+# Recrée le venv avec une version de Python installée (par exemple 3.11)
+python3.11 -m venv /Users/tasipiju/Documents/ucl-master-60-cour/2-Memoire/code-memoire/.memoire
+# Active le venv
+source /Users/tasipiju/Documents/ucl-master-60-cour/2-Memoire/code-memoire/.memoire/bin/activate
+# Réinstalle tes dépendances
+pip install --upgrade pip
+pip install -r requirements.txt
+
+
+
+
+
+
+********* Articles sur l'utilisation du ML/DL pour la prédiction/ des variables macroéconométriques *********
+////Séries temporelles (univariées et bivariées)
+Différentes bibliothèques d'analyse et de prévision des séries temporelles
+
+////Articles Scientifiques
+ARIMA => prédiction du GDP
+    https://ojs3.unpatti.ac.id/index.php/barekeng/article/download/12208/7941/
+VAR et DSGE (prévision inflation/PIB/chomage dans la zone euro)
+    https://www.ecb.europa.eu/press/projections/html/ecb.projections202506_eurosystemstaff~16a68fbaf4.fr.html
+LSTM => prédiction du pib chinois
+    https://arxiv.org/html/2407.03595v1
+LSTM => prédire les 
+    https://arxiv.org/html/2407.03595v1
+
+
+
+AVERTISSEMENT de TensorFlow sur mon mac
+MESSAGE => This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+    To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+EXPLICATION: 
+    Il signifie que votre CPU (Intel sur Mac 2018) prend en charge des instructions avancées (AVX2, FMA) 
+        qui pourraient accélérer TensorFlow, mais la version installée de TensorFlow n’a pas été compilée pour exploiter 
+        ces instructions sur toutes les opérations.
+    Vous ne bénéficiez pas des optimisations maximales possibles sur votre CPU,
+        mais cela n’empêche pas l’exécution correcte de vos scripts.
+COMMANDES caractéristiques TECHNIQUES d'un mac:
+    Voic la liste des types d'informations disponibles:
+        #system_profiler -listDataTypes
+        Exemple d'utilisation => Voir les informations sur le processeur:
+            #system_profiler SPHardwareDataType
+
+
+
+********** CODE GLOBAL POUR LA RECHERCHE DES BEST PARAMETRES **********
+Source => https://kaggle.com/code/alishaangdembe/time-series-forecasting-lstm-hyperparameter-tune
+
+
+
+
+
+********* Les paramètres d'un LSTM *********
+Voici une explication détaillée de chaque paramètre dans le contexte de la prédiction de séries temporelles avec un LSTM :
+1. Taille de la fenêtre temporelle (window size)
+Rôle : Nombre de pas de temps historiques utilisés pour prédire le pas suivant
+Impact :
+    Trop petite → Modèle manque de contexte temporel
+    Trop grande → Bruit, complexité inutile, risque de mémoriser des motifs non pertinents
+Valeur typique : 7-365 jours selon la fréquence des données
+
+2. Nombre de couches LSTM 
+Rôle : Profondeur du réseau pour capturer des dépendances complexes
+Impact :
+    1 couche : Suffisant pour des motifs simples
+    2-3 couches : Capture des hiérarchies temporelles (court/moyen/long terme)
+    3 couches : Risque de surapprentissage, nécessite beaucoup de données
+Valeur typique : 1-3 couches pour la plupart des séries temporelles
+
+3. Nombre d'unités par couche
+Rôle : Capacité de mémorisation et complexité des motifs capturés
+Impact :
+    Faible (32-64) : Modèle simple, évite le surapprentissage
+    Élevé (128-256) : Capture des relations complexes mais risque d'overfitting
+Valeur typique : 50-200 unités selon la complexité de la série
+
+4. Fonctions d'activation
+Rôle : Introduire de la non-linéarité dans les calculs
+Choix courants :
+    tanh : Standard pour les portes LSTM (valeurs entre -1 et 1)
+    relu : Convergence plus rapide mais risque de "dying ReLU"
+    sigmoid : Utilisée pour les portes (oubli/mise à jour)
+Impact : tanh généralement meilleure pour les séries temporelles
+
+5. Taux d'apprentissage (learning rate)
+Rôle : Taille des pas d'optimisation pendant l'entraînement
+Impact :
+    Trop élevé (0.1) → Oscillations, divergence
+    Trop faible (1e-5) → Convergence lente, risque de minimum local
+Valeur typique : 1e-3 à 1e-5 (Adam utilise souvent 3e-4)
+
+6. Taille du batch
+Rôle : Nombre d'échantillons traités avant mise à jour des poids
+Impact :
+    Petit batch (16-32) : Convergence plus stable mais plus lent
+    Grand batch (512+) : Accélération mais convergence moins précise
+Valeur typique : 32-128 pour les séries temporelles
+
+7. Nombre d'époques
+Rôle : Nombre de passes complètes sur le jeu d'entraînement
+Impact :
+    Insuffisant → Sous-apprentissage
+    Excessif → Surapprentissage
+Optimisation : Utiliser l'early stopping (patience=10-20)
+
+8. Taux de Dropout
+Rôle : Régularisation en désactivant aléatoirement des neurones
+Impact :
+    0-0.2 : Peu d'effet régularisateur
+    0.3-0.5 : Bon compromis pour éviter l'overfitting
+    0.5 : Risque de sous-apprentissage
+Spécifique LSTM : Peut utiliser Dropout récurrent (entre les timesteps)
+
+9. Type d'optimiseur
+Rôle : Algorithme de mise à jour des poids
+Choix courants :
+    adam : Adaptatif, bon compromis vitesse/précision
+    rmsprop : Efficace pour les problèmes récurrents
+SGD : Plus lent mais convergence plus stable
+Recommandation : Adam (avec décroissance du learning rate) pour 90% des cas
+
+
+********** Résultat de recherche des meilleurs paramètres pour le modèle LSTM*********
+///Séries Non stattionnaires
+//SANS différentiation
+CPIAUCSL => 
+Best parameters: {'batch_size': 1, 'epochs': 100, 'model__optimizer': 'rmsprop', 'model__units': 20}
+Best score: 0.9682101607322693
+
+//AVEC différenciation.  (à lancer en dormant)
+CPIAUCSL => utilisé par défaut
+Best parameters: {'batch_size': 1, 'epochs': 100, 'model__optimizer': 'rmsprop', 'model__units': 4}
+Best score: 0.14874949057896933
+Best parameters: {'batch_size': 16, 'epochs': 80, 'model__optimizer': 'rmsprop', 'model__units': 30}
+Best score: 0.09336654345194499
+GDP => 
+Best parameters: {'batch_size': 16, 'epochs': 100, 'model__optimizer': 'rmsprop', 'model__units': 4}
+Best score: 0.5184888442357382
+
+//Séries Stationnaires
+EXJPUS =>
+Best parameters: {'batch_size': 1, 'epochs': 80, 'model__optimizer': 'rmsprop', 'model__units': 4}
+Best score: 0.8611851334571838
+MICH =>
+Best parameters: {'batch_size': 16, 'epochs': 100, 'model__optimizer': 'adam', 'model__units': 4}
+Best score: 0.6752755840619405
+
+
+
+A mettre dans le rapport => 
+    Porquoi on a choisi StandardScaler??     au lieu de MinMaxScaler
+    Solution: voici els différences entre les 2
+        StandardScaler
+            Centre les données autour de 0, écart-type 1.
+            Moyenne ≈ 0, écart-type ≈ 1
+            Méthodes basées sur distance (SVM, PCA, régression, LSTM…)
+            Quand la distribution suit une loi normale (belle gaussienne)
+        MinMaxScaler
+            Ramène les données dans un intervalle donné (par défaut [0, 1])
+            Tous les points sont dans [0, 1]
+            Méthodes nécessitant un intervalle borné (réseaux de neurones, images, etc.)
+            Quand les données doivent être entre 0 et 1
+            
+
+
+
+********** Comment faire une revue de littérature ?********.
+Définition d'un revue de littérature
+    C'est un passage en revue synthétique et systématique des recherches déja effectuées sur un sujet 
+    Il permet de faire le point sur les avancées, les critiques, les débats et les lacurnes
+
+Objectif : comment positionner son travail et apporter une contribution originale
+
+Conseils à suivre:
+    1-Identifier et télécharger les reférences/articles scientifiques qui vous semblent les plus pertinents
+        Diversifiez au maximum les sources utilisées (mini 5 sources)
+        Rester dans la problématique: éviter d'en sortir
+    2-Extraire les informations de chaque articles de manière systématique
+        Noter les citations et SURTOUT les idées clés (faits, conclusions et suggestions)
+    3-Essayer d'organiser les informations par thème/méthodologie/date
+        Règle d'entonoir
+        Schema intellectuel académique
+    4-Rédaction: structurer les informations avec le système PEER
+        PEER: Points clés, Explication, Exemples et enfin répétition
+    5-Conclusion: identifier les principales trouvailles, leurs limites et les pistes de recherche futures
+
+Comment trouver les meilleurs articles scientifiques?
+    Voici les outils:
+        -Pour trouver les articles:
+            --classiques:
+                ---google scholar
+                ---cairn.info
+            --à base d'IA:   => line vidéo d'outils IA : https://www.youtube.com/watch?v=87szMKDwcAU&ab_channel=RMDCLab-ResearchMethodsDesign%26ConsultingLab
+                ---elicit.org
+                ---semanticscholar.org
+        -Pour resumer les articles:
+            --paper-digest.com
+            --scholarcy
+
+Exemple de rédaction de revue de littérature
+    Lien du tutoriel => https://www.youtube.com/watch?v=T0pnhGZVbQc&ab_channel=R%C3%A9dacteurM%C3%A9moire
+    Canevas à suivre :
+        -choisir les articles/revue/journal scientifiques en lien avec le sujet
+        -lire ces articles scientifiques
+        -resumer ces articles en mois de 10 lignes
+        -inclure dans la note de bas de page la référence à l'article
+
+
+
+
+
+********* Liste des articles scientifiques (05) choisies pour la revue de littérature ********
+Partie univariée (prédiction de l'inflation)
+    1-1-Machine learning real-time CPI forecasting1
+        https://www.bis.org/ifc/publ/ifcb57_18.pdf
+    1-2-Machine Learning for Economic Forecasting: An Application to China’s GDP Growth
+        https://arxiv.org/html/2407.03595v1
+    1-3-Forecasting Pakistan's Inflation Rate Using ARIMA Models
+        https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5112275
+    1-4-Predicting gross domestic product to macroeconomic indicators
+        https://www.sciencedirect.com/science/article/pii/S2667305322000229
+    1-5-Survey on Economic Indicators Prediction using Artificial Intelligence Techniques
+        https://www.ieeesem.com/researchpaper/Survey_on_Economic_Indicators_Prediction_using_Artificial_Intelligence_Techniques.pdf
+    1-6-I(supprimé)NFLATION FORECAST, MACHINE LEARNING, BOOSTING, RANDOM FOREST 
+        https://www.elibrary.ru/item.asp?id=37181705
+    1-7-Global inflation forecasting and Uncertainty Assessment: Comparing ARIMA with advanced machine learning
+        https://www.sciencedirect.com/science/article/pii/S1687850725001141
+    1-8-Predicting inflation with recurrent neural networks
+        https://www.sciencedirect.com/science/article/abs/pii/S0169207024000773
+
+
+Partie bivariée 2 (Taux d'inflation et taux de chommage) (la 3 et la 4 => meme continent => choix d'1 seul)
+    2-1-(Payant) Recent developments in the theory of inflation and unemployment
+        https://www.sciencedirect.com/science/article/abs/pii/0304393276900337
+    2-2-(Payant) Nobel Lecture: Inflation and Unemployment
+        https://www.journals.uchicago.edu/doi/abs/10.1086/260579
+    2-3-Inflation And Unemployment Nexus In Nigeria: Another Test of the Phillips Curve
+        https://www.researchgate.net/profile/Anthony-Orji-2/publication/298432186_Inflation_And_Unemployment_Nexus_In_Nigeria_Another_Test_of_the_Phillips_Curve/links/5c6db9f6299bf1e3a5b8c59e/Inflation-And-Unemployment-Nexus-In-Nigeria-Another-Test-of-the-Phillips-Curve.pdf
+    2-4-Inflation and unemployment in South Africa : is the Phillips curve still dead?
+        https://journals.co.za/doi/abs/10.10520/EJC-8e0adf275
+    2-5-The Relationship between Inflation and Unemployment: A Theoretical Discussion about the Philips Curve
+        https://www.academia.edu/113498512/The_Relationship_between_Inflation_and_Unemployment_A_Theoretical_Discussion_about_the_Philips_Curve
+    2-6-(Payant)Examining the New Keynesian Phillips Curve in the U.S.: Why has the relationship between inflation and unemployment weakened?
+        https://www.sciencedirect.com/science/article/pii/S1090944324000516
+    2-7-(Payant)PHILLIPS CURVES AND UNEMPLOYMENT DYNAMICS: A CRITIQUE AND A HOLISTIC PERSPECTIVE
+        https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-6419.2009.00598.x
+    2-8-(payant) Phillips curve inflation and unemployment: an empirical research for Greece
+        https://www.inderscienceonline.com/doi/pdf/10.1504/IJCEE.2013.056265
+
+
+Partie bivariée 3 (Taux d'inflation et taux d'interet)
+    3-1-(Payant) Is the Fisher effect for real?: A reexamination of the relationship between inflation and interest rates
+        https://www.sciencedirect.com/science/article/abs/pii/030439329290060F
+    3-2-Relationship between inflation and interest rate: evidence from Pakistan
+        https://www.isca.me/rjrs/archive/v3/i4/9.ISCA-RJRS-2013-838.pdf
+    3-3-(Payant)Dynamics of interest and inflation rates
+        https://www.sciencedirect.com/science/article/abs/pii/S0927539816301104
+    3-4-(inscription/telechargement) The Causal Relationship between Inflation and Interest Rate in Turkey (presque identique au 3-2)
+        https://www.ceeol.com/search/chapter-detail?id=1158859
+    3-5-The relationships between interest rates and inflation changes: An analysis of long-term interest rate dynamics in developing countries
+        https://sciendo-parsed.s3.eu-central-1.amazonaws.com/64720ca4215d2f6c89dba182/10.2478_jcbtp-2020-0037.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA6AP2G7AKDKHNCZLQ%2F20250703%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20250703T190155Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEBMaDGV1LWNlbnRyYWwtMSJHMEUCIE6gpcGnSK%2FhBkzNjZxFE8CSDg49rgfeyMnT%2FzyM7akHAiEAythStPbe0nJniAs3kppb3Sp12yimLSAZRC%2FGjZ93%2BI0qvQUIHBACGgw5NjMxMzQyODk5NDAiDIvG49bxFI%2FQXBlT%2ByqaBaYS%2FIwMdJ19Yho2D3xLUUfLjQEMQWQ%2B01KvhOBFSkpj2c9x%2BJIOZxsGVcFwZGcRWd0H%2BgDzRzrqpIF1C5k2GCzETjK4d3BaNdojedbCqFO38a%2FeJTlBSbjDgvcFhSdvEKbp4enydNiW4%2Fz%2BoL9kASttGN0W56CocvlTPGJ2rypp7xFPV4f0nnhl9287A5%2FQ1IhsxGQ868ocVU9Vpt6QyGTfGtcYCYrUgTsBwGZmFU6bgi2LXhUq%2BreOvnEbl6rWScz45QbAWZ4sUFm8CmJhmvMPhiLrp7j81lHBRxSwjL2sxuWmC6DTw1orGyZKEW%2BsHUhSMXMBkAk3SYDBqGnctO5qoAE8dMhOnMcA5mNR2MqQocWRF1epz%2BrYG83cNenn0T%2FB93ixeovjddCaHqHELAG42qrvmGP6QSULWLOt2DC%2BtLCIyCP4yPn6i2xjBin2Yc2GxilsVE02in%2F8pP5JytLAZ53nuSU4y4LeQ2Nj5WgQt8Gm8EtvRFUDGs0uoT6znV4vQHoSr1zMvQq6gmJJbEQLdDlws%2BViZN5HaPOt48u3ypEBmrUwAfArtgM55VTqGCE5kjKWL7G%2FWiRHj5BOhgWUgcYF9f7SN1CZUlvr2qQeoz0TroMzsivGNFCfmyXljQ6RYs57%2FQpkVbPSKh7YK6Y7OH68wBv%2B9loUax5JN4QEWYQtDSEP3cUkVqvKyBwhEjG93I7%2FTmEuVFi%2BWmFhlR6HJ7zVrWpwa9jHqIAqRnLQHQ1b568HhkBwprZimLBDCvMwz7Qi1Ugqc9RrlRxwfUUXp%2B%2FQAIv%2Bqy5gV95dYoXabj3aKQvKtIXTPXZki4U7Yny5s4LcM8l7OipUHsIAYycHwVQSW3%2F1HXAxQZeyaFs1X6kqSX6iazyywzDrnpvDBjqxAUPxnhkJKpZdXF5pod3bItlQwD9xMPDe2OzNBkYVm84Rirl1lKoq34AFtnGgyMmg%2BGNyVhjhn8tiwmeWYyFt4w3nrOAIrd1h8XeGKS9P%2FusqgvVUqyGA7f4MkaxhzzTMCvBl6gtAGWaH5pAg5GCGnzltEel76QkGc%2FoGeuNaxU%2Bugc6IT2EqOtn6uaiRRRBEzodqGG1juNXvF9XlLLGvABZ%2B1%2FN%2FFbiq%2BJiq8xDsnuDc2w%3D%3D&X-Amz-Signature=79a902d8646a30c6a181197cb46f9ffee0294fd194b3ded1b0c914ee8986c64a&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject
+    3-6-THE RELATIONSHIPS BETWEEN INTEREST RATES AND INFLATION CHANGES: AN ANALYSIS OF LONG-TERM INTEREST RATE DYNAMICS IN DEVELOPING COUNTRIES
+        https://repo.uum.edu.my/id/eprint/2416/
+    3-7-Relationship between inflation and interest rates in Swaziland revisited
+        http://www.irbis-nbuv.gov.ua/cgi-bin/irbis_nbuv/cgiirbis_64.exe?C21COM=2&I21DBN=UJRN&P21DBN=UJRN&IMAGE_FILE_DOWNLOAD=1&Image_file_name=PDF/banks_2017_12_4(cont.)__12.pdf
+    3-8-The inflationary consequences of prioritising central bank profits
+        https://www.ecb.europa.eu/pub/pdf/scpwps/ecb.wp2985~9a635ec5db.en.pdf
+    3_9-(pas scientifique) Comment les taux d’intérêt influencent l’inflation et la croissance
+        https://skilling.com/eu/fr/blog/trading-terms/interest-rates-influence-inflation-and-growth/
+
+
+Voici les paramètrs importants pour un modèle Random FOREST
+    n_estimators	    => Nombre d'arbres de décision dans la forêt, il améliore les performances mais accroit la complexité et le temp de calcul
+    max_depth	        => Profondeur maximale des arbres, controle le niveau de complexité et d'ajustement du modèke
+    min_samples_split	=> Nombre minimal d’échantillons pour diviser un nœud, il influence a robustesse du modèle face au bruit
+    min_samples_leaf	=> Nombre minimal d’échantillons dans une feuille, prévient l'overfitting en limotant la taille des feuilles
+    max_features	    => Nombre de variables utilisées pour chaque split, nombre maximum de caractéristiques à considéreré pour une division
+    bootstrap	        => Utilisation ou non du bootstrap
+n_estimators (default=100)
+    → Nombre d'arbres dans la forêt. Plus il y en a, plus le modèle est stable, mais plus il est lent.
+criterion (default='squared_error')
+    → Fonction pour mesurer la qualité d’un split (ici l’erreur quadratique).
+max_depth (default=None)
+    → Profondeur maximale des arbres. Si None, les arbres s'étendent jusqu'à purger tous les échantillons.
+max_features (default='auto' ou 'sqrt' selon version)
+    → Nombre de features testées à chaque division ; réduit le surapprentissage.
+min_samples_split (default=2)
+    → Nombre minimal d’échantillons pour qu’un nœud soit divisé.
+min_samples_leaf (default=1)
+    → Nombre minimal d’échantillons dans une feuille ; augmente sa valeur pour régular
+
+
+Autres parameters importants:
+n_in =  nombre de pas en arrière utilisé pour prédire la valeur actuelle 
+    c'est une fenettre glissante
+n_test = nombre de pas (lignes) réservés pour le test lors du split
+    expl: s'il est égale à 12, si on a 100 lignes, on entraine sur 88 et on teste 12 lignes
+
+
+
+
+Meilleurs paramètres trouvés: 
+//AVEC différentiation
+nbr_in = 6          #ATTENTION. a modifier pour des raisson de test
+nbr_out = 1
+CPIAUCSL
+    {'criterion': 'squared_error', 'max_depth': 10, 'max_features': 'log2', 
+    'min_samples_leaf': 1, 'min_samples_split': 5, 'n_estimators': 75}
+    {'criterion': 'absolute_error', 'max_depth': 10, 'max_features': 'log2', 
+    'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 50}
+
+    {'criterion': 'squared_error', 'max_depth': 8, 'max_features': 'log2', 
+    'min_samples_leaf': 1, 'min_samples_split': 5, 'n_estimators': 75}
+
+nbr_in = 12          #ATTENTION. a modifier pour des raisson de test
+nbr_out = 1
+CPIAUCSL
+    {'criterion': 'absolute_error', 'max_depth': 15, 'max_features': 'sqrt', 
+    'min_samples_leaf': 1, 'min_samples_split': 10, 'n_estimators': 75}
+    {'criterion': 'squared_error', 'max_depth': 10, 'max_features': 'log2', 
+    'min_samples_leaf': 1, 'min_samples_split': 10, 'n_estimators': 50}
+
+
+//SANS différentiation
+nbr_in = 6          #ATTENTION. a modifier pour des raisson de test
+nbr_out = 1
+CPIAUCSL
+    {'criterion': 'squared_error', 'max_depth': 20, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 200}
+    {'criterion': 'absolute_error', 'max_depth': 20, 'max_features': 'log2', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 50}
+    
+nbr_in = 12          #ATTENTION. a modifier pour des raisson de test
+nbr_out = 1
+CPIAUCSL
+    {'criterion': 'absolute_error', 'max_depth': 15, 'max_features': 'log2', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 75}
+
+
+
+
+Pourquoi on peut avoir des résultats différets pour des données identiques?
+Réponses:
+    -Comportement aléatoire d’un Random Forest
+        Chaque arbre du Random Forest utilise un tirage aléatoire
+            sélection aléatoire de sous-ensembles de variables (max_features)
+        Si tu ne fixes pas un random_state, chaque exécution donne des résultats légèrement différents
+    -Randomness dans la validation croisée
+        La validation croisée (cv) induit de la variabilité si :
+            les plis ne sont pas fixés,
+        il y a du shuffle dans le K‑fold, ou si n_jobs > 1 (parallélisme non déterministe) 
+
+
+
+PROBLEME: randomforrest marche beaucoup avec 
+    https://www.ine.pt/revstat/pdf/Randomforestsfortimeseries.pdf
+
+
+
+
+
+
+
+****************
+ANALYSE BVARIÉES
+****************
+
+********** Les différents tyoes de modèles économétriques: **********
+=>Modèles de regresssion
+    Modèle de Regression linéaire simple (relation linéaire entre variable dépendante et indépendantes)
+    Modèle de Regression linéaire multiple (modèle simple avec plusieurs variables indépendantes)
+    Modèle de Regression non linéaire (relation non linéaire)
+    Modèle de Resgression logistique (variables dépendantes binaires)
+    Modèle de Regression Tobit (variables dépendantes censurées)
+=>Modèles de séries chronologiques
+    Modèle ARIMA (ananlyser et prédire les séries chronologiques)
+    Modèle VAR (relation entre plusieurs variables qui évoluent dans le temps)
+    Modèle GARCH (modeliser la volativité dans les séries chronologiques)
+=>Modèles d'estimation
+    Estimation par les Moindres Carrés Ordinaires (MCO)
+    Estimation par le maximum de vraissemblance (MLE)
+    Méthodes Bayésiennnes
+=>Autres modèles
+    Modèles de choix discrets
+    Modèles de panel
+    Modèles d'équilibre général
+    Modèles macroéconométriques
+
+
+
+
+***************************************************************************************************************************
+ANALYSE BVARIÉE 1 : taux d'inflation et atux de chomage
+***************************************************************************************************************************
+
+*************Méthodes et modèles utilisés pour une analyse de la courbe de Phillips***************
+A. Méthodes descriptives (exploratoires)
+    Visualisation des séries temporelles.
+    Caractéristiques descriptives (moyenne, moyenne, mediane, max, min, nbr d'observations, skewness, Kurtosis, Jarque-Bera)
+    Diagrammes de dispersion (Inflation vs. Chômage).
+    Régressions linéaires simples :
+        Inflation(t) = α + β × Chomage(t) + ε 
+    Analyse de corrélation.
+B. Tests de stationnarité: il faut utiliser avant tout modèle sérieux (faire maximu 2 (DANS UN TABLEAU)):
+    ADF (Augmented Dickey-Fuller)
+    KPSS (Kwiatkowski–Phillips–Schmidt–Shin)
+    Phillips-Perron (PP)
+    ⚠️ En général, l’inflation et le chômage sont non-stationnaires, donc on les différencie ou on utilise des modèles adaptés (VECM, etc.).
+​C. Modèles de séries temporelles
+    1. VAR (Vector AutoRegressive)
+        Modèle à équations multiples où chaque variable est expliquée par ses retards et ceux des autres.
+        Permet de tester les interactions dynamiques et les effets retardés.
+    2. VECM (Vector Error Correction Model)
+        Utilisé si les deux séries sont non-stationnaires mais co-intégrées.
+        Permet d’analyser la relation de long terme + ajustements de court terme.
+        ➡️ Tests utilisés :
+            Test de co-intégration de Johansen
+            Test de co-intégration de Fisher
+            Test d’Engle-Granger
+    3.Modèles non linéaires
+        NARDL : analyse des relations non-linéaires et asymétriques entre inflation et chômage.
+        Quantile Regression : examine si la relation change selon le niveau de chômage ou inflation.
+D. Tests de causalité
+    Causalité de Granger :
+        Permet de tester si le chômage "prévoit" l’inflation ou l'inverse.
+        Ne prouve pas la causalité forte, mais l’antériorité temporelle.
+
+
+
+
+
+*************Exemple de pipeline d'analyse***************
+Visualisation des séries
+Caractéristiques descriptives (Statistiques descriptives sous forme de tableau)
+Test de stationnarité (ADF, PP, KPSS)
+Test de co-intégration (Johansen, Engle-Granger)
+Estimation d’un modèle VAR ou VECM. (choisir 1)
+Test de causalité de Granger
+Simulation d’impulsions (IRF) et décomposition de variance
+Régression de la courbe de Phillips avec ou sans anticipations
+
+
+
+
+
+************Modèle ADRL************
+0. Défintion:
+    C'est un modèle ARDL (Autoregressive Distributed Lag model) : c’est un outil très puissant pour modéliser les relations 
+entre séries temporelles économiques, notamment quand tu veux analyser les effets à court et long terme entre deux 
+ou plusieurs variables, même lorsqu’elles ne sont pas stationnaires au même ordre.
+
+1. Qu'est-ce que le modèle ARDL ?
+    Le modèle ARDL(p, q) permet de relier une variable dépendante à ses propres retards (autoregressive = AR) ainsi qu’aux 
+retards d’une ou plusieurs variables explicatives (distributed lag = DL).
+
+2. Pourquoi utiliser un ARDL ?
+Le grand avantage du modèle ARDL est qu’il peut être utilisé :lorsque les séries sont de type I(0) (stationnaires) 
+ou I(1) (non stationnaires),mais pas I(2) ! (modèle invalide si une des séries est I(2)).
+👉 Tu n’as pas besoin que toutes les séries soient stationnaires au même ordre, contrairement à un VECM.
+
+3. Conditions d’utilisation du modèle ARDL
+    Étape	Action
+    1.	Tester la stationnarité avec ADF, PP, KPSS
+    2.	Vérifier que aucune variable n'est I(2)
+    3.	Estimer le modèle ARDL(p, q)
+    4.	Tester l’existence d’une relation de long terme avec le test de Borns-Pesaran-Shin (BPS) (aussi appelé bounds test)
+    5.	Estimer les effets de long terme et d’ajustement court terme via l’ECM (modèle à correction d’erreur)
+
+4. Composantes du modèle ARDL
+    Partie courte période : effets dynamiques immédiats via les retards.
+    Partie long terme : si relation stable entre les niveaux → co-intégration.
+    ECM (Error Correction Model) : modèle dérivé de l’ARDL qui montre à quelle vitesse la variable dépendante revient à l’équilibre de long terme.
+
+5. Test de co-intégration : Bounds Test.  (Penser aussi au test de Fisher)
+Proposé par Pesaran, Shin et Smith (2001).
+Hypothèses :
+    H0 : Pas de relation de long terme (pas de co-intégration)
+    H1 : Il existe une relation de long terme
+    Résultat :
+        Si la statistique F > seuil supérieur → co-intégration confirmée
+        Si F < seuil inférieur → pas de co-intégration
+        Si F entre les deux → zone d’incertitude
+
+===>>>Étapes d’analyse:
+0 - Statistiques descriptives sous forme de tableau
+1 - Tests de racine unitaire ou de stationnarité : ADF ou PP pour vérifier que chaque série est I(0) ou I(1), mais pas I(2)
+2 - Sélection des retards optimaux (p et q) via critères d’information (AIC, BIC).
+3 - Test des bornes de cointegration (Pesaran–Shin–Smith) :
+    Construire le modèle UECM (Unrestricted Error Correction Model).
+    Calculer le F-statistique pour tester l’hypothèse nulle (pas de relation de long‑terme).
+    Si F > borne supérieure → cointegration, relation de long terme présente ; si F < borne inférieure → pas de relation ;
+    si entre les deux → conclusion incertaine 
+4 - Estimation du modèle ECM : introduit un terme de correction d’erreur (ECTₜ₋₁) pour capturer la dynamique de retour à l’équilibre à court terme à taux λ (idéalement négatif et significatif) .
+5 - Tests de diagnostic : validité des résidus (autocorrélation, hétéroscédasticité, normalité…), stabilité et robustesse.
+
+===>>>code python
+import pandas as pd
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.ardl import ARDL, UECM
+
+# 1. Charger données
+df = pd.read_csv('data.csv', parse_dates=['Date'], index_col='Date')
+y = df['inflation']
+x = df['chomage']
+
+# 2. Tests de stationnarité
+print('ADF inflation:', adfuller(y)[1])
+print('ADF chômage:', adfuller(x)[1])
+
+# 3. Trouver ordre optimal
+from statsmodels.tsa.ardl import ardl_select_order
+sel = ardl_select_order(y, exog=x, maxlag=5, ic='aic')
+print(sel.model.fit().summary())
+
+# 4. Ajuster un ARDL(p,q)
+model = ARDL(y, lags=sel.ar_lags, exog=x, exog_lags=sel.exog_lags).fit()
+print(model.summary())
+
+# 5. Test des bornes de cointegration
+uecm = model.to_uecm()
+bt = uecm.fit().bounds_test(case=3)
+print(bt.stat, bt.crit_vals)
+
+# 6. Si cointegration détectée → estimer ECM
+res = uecm.fit()
+print(res.summary())
+
+# 7. Diagnostics
+print(res.test_serial_correlation())
+print(res.test_heteroskedasticity())
+
+
+
+*****************Tableau comparatif ARDL, VAR et VECM**********************
+Modèle	Type de Séries	               Relation Modélisée	                    Long terme	    Court terme	       Exigences principales	                                  Cas d'usage typique
+VAR	    Toutes I(0),(stationnaires)	   Dynamique entre plusieurs variables	    Non	            Oui	               Séries stationnaires / même ordre d’intégration	          Relations dynamiques à court terme ; prévisions macroéco
+VECM	Toutes I(1), co-intégrées	   Idem VAR + correction du déséquilibre	Oui	            Oui	               Séries non stationnaires, mais cointegrées	              Long terme + ajustement court terme ; co-integration
+ARDL	Mixte I(0)/I(1), pas I(2)	   Impact retardé, univoque/bivarié	        Oui	            Oui	               Pas toutes I(2), co-integration possible, lags	          Cas mixte/peu de variables, séries mixtes
+
+Description synthétique et cas d'utilisation (VAR, VECM, ADRL)
+VAR (Vector Autoregressive Model)
+    Pour modéliser les dynamiques entre plusieurs séries temporelles stationnaires (I(0)).
+    Chaque variable dépend de ses propres retards et ceux des autres.
+    Pas adapté aux séries non stationnaires sans cointégration, car il peut donner des résultats trompeurs.
+    À utiliser quand toutes les séries sont stationnaires et que l'intérêt porte sur les relations à court terme entre les variables.
+VECM (Vector Error Correction Model)
+    Pour séries non stationnaires (I(1)) qui sont co-intégrées (partagent une relation d’équilibre de long terme).
+    Modélise à la fois l’ajustement vers l’équilibre de long terme (terme d'erreur de correction) et les dynamiques à court terme.
+    À utiliser quand toutes les séries sont I(1) et que la cointégration existe (test de Johansen positif).
+ARDL (Autoregressive Distributed Lag Model)
+    Supporte les séries stationnaires (I(0)), non stationnaires (I(1)), ou un mélange (pas de I(2)).
+    Permet de tester la présence de co-intégration avec le bound test de Pesaran.
+    Pratique pour explorer à la fois le court terme et le long terme, même avec peu de variables, ou quand les séries ont des ordres d’intégration différents.
+    À utiliser si vos séries sont de types mixtes (I(0) et I(1)), ou si leur intégration n’est pas homogène.
+
+Choix (entre VAR, VECM et ADRL) selon la stationnarité des séries
+    Deux séries sont stationnaires (I(0)) :
+        VAR est adapté pour modéliser leurs interactions dynamiques à court terme.
+    Deux séries sont non stationnaires (I(1)), et co-intégrées :
+        Utilisez VECM pour prendre en compte le long terme et l’ajustement vers l’équilibre.
+    Deux séries sont non stationnaires (I(1)), sans co-intégration :
+        Appliquez VAR sur les séries différenciées (pour les rendre stationnaires).
+    L’une est stationnaire (I(0)) et l’autre ne l’est pas (I(1)), aucune n’est I(2) :
+        ARDL est LE choix le plus robuste, car il gère le mix I(0)/I(1) et permet de tester la co-intégration.
+
+Résumé opérationnel
+    VAR : dynamiques de court terme, séries stationnaires.
+    VECM : dynamiques court et long terme, séries I(1) et co-intégrées.
+    ARDL : cas mixte, ou séries I(0) et I(1), explore court et long terme.
+
+Cas d'utilisation exceptionnel
+    Si vous avez deux séries non stationnaires, testez la co-intégration :
+        Co-intégrées ? VECM
+        Pas co-intégrées ? VAR sur les différenciées, ou ARDL
+            Séries de types mixtes ? ARDL est le plus flexible.
+
+
+
+
+IMPORTANT: Résumé pour les test en fontion du niveau de différentiation
+Cas     Série 1    Série 2         Test(s) et modèle(s) recommandé(s)                             Action                  
+1       I(0)       I(0)            Corrélation classique + VAR                                    ❌ Pas de cointégration
+2       I(0)       I(1)            ARDL Bounds testing (Pesaran et al., 2001) + Pearson + ADRL    ✅ Test possible
+3       I(1)       I(1)            Engle-Granger ou Johansen + VECM (si co-intégrées)             ✅ Test classique
+                                   Engle-Granger ou Johansen + ADRL (si pas co-intégrées)         ✅ Test classique
+                                   VAR sur les différentiations (ATTENTION moins précis)
+4       I(2)       I(x).           RAS   
+
+
+
+
+*****************Comment trouver le lag optimal qui minimise AIC ou BIC?*****************
+Pour choisir le lag (retard) optimal dans un modèle ARDL, VAR ou VECM, il faut rechercher la valeur de lag qui minimise AIC et BIC
+    1-Fixer un lag maximal raisonnable selon la fréquence des données 
+        (ex. : 12 pour mensuel, 4 pour trimestriel, 2 pour annuel)
+    2-Estimer tous les modèles possibles de l’ordre 0 jusqu'au maximum autorisé, 
+        pour toutes les combinaisons de lags sur chaque variable (choix automatique possible dans les logiciels modernes)
+    3-Calculer le critère d'information pour chaque modèle :
+        AIC a tendance à sélectionner des modèles plus grands (meilleur pour la prévision).
+        BIC/SIC (Schwarz) privilégie des modèles plus parsimonieux (plus simples, meilleur pour l'analyse structurelle)
+    3-Sélectionner le modèle avec la valeur la plus basse du critère choisi (AIC ou BIC)
+        le printer et retourner
+
+
+
+
+*****************Test de cointégration de Pearson*****************
+    -Definition:
+        Le test de cointégration aux bornes (bounds test) de Pesaran et al. (2001) est une méthode puissante pour vérifier 
+        l’existence d’une relation de long terme (cointégration) entre deux (ou plusieurs) séries temporelles, même si elles 
+        ne sont pas toutes du même ordre d’intégration (I(0) ou I(1)) tant qu’aucune n’est I(2)
+    -Etapes:
+        --Test de stationnarité préalable 
+            Maxim 1 différentiation
+        --Choix du nombre de retards (lags) optimaux
+            Déterminez les lags appropriés à inclure, avec des critères comme AIC ou BIC/SIC.
+            Cela garantit que le modèle capte correctement la dynamique intertemporelle.
+        --Estimation du modèle ARDL
+        --Calcul de la statistique F des bornes
+            On teste l’hypothèse : Pas de cointégration (λ1 = λ2 = 0) versus existence d’une relation de long terme (au moins l’un ≠ 0).
+            La statistique F comparera la significativité conjointe des coefficients retardés au niveau
+        --Comparaison avec les tables de Pesaran
+            Il existe deux bornes de seuil critique :
+                Borne inférieure : hypothèse que toutes les variables sont I(0)
+                Borne supérieure : hypothèse que toutes sont I(1)
+            Règle de décision :
+                Si F < borne inférieure : pas de cointégration
+                Si F > borne supérieure : cointégration confirmée
+                Si F entre les deux : résultat indécis, pas de conclusion nette
+
+
+
+*****************Pour vérifier si tes séries temporelles sont co-intégrées avant d’utiliser un modèle VECM*****************
+1 - Tester l’ordre d’intégration
+    Vérifie que tes séries sont non stationnaires mais intégrées d'ordre 1 (I(1)).
+    Utilise un test de racine unitaire comme ADF (Augmented Dickey-Fuller)
+2 - Tests de cointégration
+    --Test d’Engle-Granger (pour 2 séries)
+        Estime la relation de long terme par une régression OLS entre tes deux séries 
+            par exemple, inflation = a + b*chômage + bruit
+            par exemple, chômage = a + b*inflation + bruit
+        Teste la stationnarité des résidus : récupère les résidus de cette régression et applique un test de racine unitaire (ADF, PP).
+            Si les résidus sont stationnaires, il y a cointégration (relation de long terme stable)
+    --Test de Johansen (pour système multivarié, adapté au VECM)
+    --Test de co-intégration (Pesaran et al., 2001)        (Pas adapté)
+
+
+
+
+*****************Remarques importantes pour le rapport final*****************
+1-Statistiques descriptives
+    Le kurtosis de scipy est le "kurtosis excess" (souvent appelé kurtosis - 3), pour obtenir le kurtosis standard, ajoute 3 si besoin.
+    "Probability" désigne la p-value du test de Jarque-Bera : si < 0.05, la normalité est rejetée.
+    "Somme carré des écarts" : ∑(x−moyenne)2
+
+2-Test de normalité (S'aplique sur UNE SEULE VARIABLE):
+    Objectif => on veut voir si suit une distribution normale (normalité)
+    Voici les différents tests possibles:
+        Test de Shapiro-Wilk : Le plus puissant pour n ≤ 5000
+        Test de D'Agostino-Pearson : Bon pour des grands échantillons
+        Test de Kolmogorov-Smirnov : Classique mais moins puissant
+        Test d'Anderson-Darling : Plus sensible aux queues de distribution
+        Test de Jarque-Bera : Basé sur l'asymétrie et l'aplatissement
+    Recommandations pratiques :
+        n ≤ 50 : Shapiro-Wilk uniquement
+        50 < n ≤ 5000 : Shapiro-Wilk + D'Agostino-Pearson
+        n > 5000 : D'Agostino-Pearson + Anderson-Darling
+    Interprétation :
+        H₀ : Les données suivent une distribution normale
+        p-value > 0.05 → Distribution normale
+        p-value ≤ 0.05 → Distribution non-normale
+    Important : Combinez toujours les tests statistiques avec l'analyse visuelle (Q-Q plot, histogramme) 
+    
+3-Choix du test d'indépendance
+    ATTENTION: d'abord réaliser le TEST DE NORMALITE sur chacune des variables 
+    Plusieurs tests de correlation entre les variables => Pearson, Spearnman, Kendall, etc..
+    Lequel choisir??
+    EVALUATIONS: 
+        le 1er à beaucoup de conditions => distribution normale, relation lineaire des variables, etc;;  (paramétrique) 
+        le 2e => pas de conditions de distribution, plus adapté aux séries temporelles
+        le 3e => basé sur la concordances entres paires d'observations
+    SOLUTION => le 2e 
+
+
+
+
+
+
+Guide Complet : Tests de Cointégration pour Séries Macroéconomiques
+📊 CAS 1 : I(0) et I(0) - Séries Stationnaires
+❌ Cointégration : NON
+
+Raison : Les séries I(0) sont déjà stationnaires, donc pas de cointégration possible
+Principe : La cointégration nécessite des séries non-stationnaires qui convergent vers un équilibre
+
+✅ Tests Recommandés :
+    Corrélation de Pearson/Spearman (Un coefficient élevé (en valeur absolue) suggère une association de court terme, mais n’indique ni la direction de la causalité ni de mécanisme dynamique direct)
+    Test de causalité de Granger (sur séries en niveau) =>permet de vérifier si les valeurs passées de l’une aident à prédire l’autre, dans un modèle restreint à des séries stationnaires.
+    Régression linéaire classique avec tests de robustesse
+
+🎯 Modèles Appropriés :
+    Régression Linéaire Multiple (OLS)
+    Modèle VAR en niveau (si plusieurs variables)
+        permet d’estimer les interactions de court terme et d’analyser les réponses dynamiques aux chocs via les fonctions de réponse impulsionnelle (IRF).
+        permet de modéliser l’évolution de chaque série en fonction de ses propres retards et de ceux de l’autre.
+    Modèles ARMA pour la prévision individuelle
+
+Interprétation des résultats
+    Corrélation : Si la corrélation est significative, il existe un lien de dépendance de court terme. Attention, cela ne signifie pas causalité.
+    Granger : Si la causalité de Granger est significative (p-valeur < 0.05), cela signifie que les valeurs passées de la série X apportent de l’information pour prédire la série Y au-delà des propres retards de Y.
+    VAR :
+        Les coefficients croisés (effet de X_t-1 sur Y_t) permettent d’identifier et de quantifier ces dépendances de court terme.
+        La dynamique globale (impulse response function) permet d’analyser la propagation des chocs.
+        Le critère AIC minimise l’erreur de prévision mais peut sélectionner des modèles plus complexes.
+        BIC favorise la parcimonie (modèle simple).
+        Les résidus doivent se comporter comme un bruit blanc pour valider le modèle.
+        Interpréter les coefficients du VAR pour comprendre l’effet dynamique des variables entre elles
+    Régression linéaire : Vous pouvez également estimer une simple régression linéaire (en niveau), mais l’interprétation est celle d’une dépendance moyenne, sans notion de causalité ni dynamique.
+
+
+
+
+📊 CAS 2 : I(0) et I(1) - Ordres Mixtes
+⚠️ Cointégration Classique : NON
+
+Problème : Test d'Engle-Granger inadapté (nécessite toutes I(1))
+
+✅ Tests Recommandés :
+    🏆 ARDL Bounds Test (Pesaran et al., 2001) - MÉTHODE DE RÉFÉRENCE
+    Test de causalité de Granger (après transformation appropriée)
+
+🎯 Modèles Appropriés :
+    🥇 Modèle ARDL (AutoRegressive Distributed Lag)
+    Modèle ECM-ARDL si cointégration détectée
+    Régression avec variables instrumentales (si endogénéité)
+
+📚 Justification Académique :
+    Avantage ARDL : "Unlike Johansen's method, ARDL does not require pre-testing for the exact order of integration (I(0) or I(1)) for all series"
+    Flexibilité : Gère les ordres d'intégration mixtes sans problème
+
+1. Hypothèses de base
+    Ordre d’intégration :
+        Une variable (ex. : X) est I(0), donc stationnaire.
+        Une variable (ex. : Y) est I(1), donc non stationnaire (mais stationnaire après une différenciation).
+    Aucune des séries n’est I(2) ou d’ordre supérieur, sinon les modèles classiques ne sont pas applicables.
+    Relation potentielle de long terme : Les séries peuvent être reliées par une relation d’équilibre (cointégration) malgré la non-stationnarité de l’une d’elles.
+2. Tests statistiques à réaliser
+    Tests de racine unitaire (pour déterminer I(0) ou I(1)) :
+        Test Augmented Dickey-Fuller (ADF) [H0 : racine unitaire ⇒ non stationnaire]
+        Test KPSS [H0 : stationnarité]
+        Interpréter les deux en sens croisé pour lever l’ambiguïté.
+    Test de cointégration (relation à long terme) :
+        Bounds Test de Pesaran et al. (ARDL Bounds Test), recommandé pour variables d’ordre d’intégration mixte.
+    Tests diagnostics classiques après modélisation :
+        Normalité des résidus (Shapiro-Wilk).
+        Autocorrélation des résidus (Durbin-Watson ou Breusch-Godfrey).
+        Hétéroscédasticité des résidus (Breusch-Pagan ou White).
+3. Modèles utilisables
+    ARDL (Autoregressive Distributed Lag) :
+        Approprié quand l’une des variables est I(0) et l’autre I(1) (aucune I(2)).
+        Permet d’estimer une relation de long terme et de court terme simultanément.
+4. Protocole d’analyse et interprétation des résultats
+Tester et documenter la stationnarité de chaque série
+    Si X est I(0) et Y est I(1), continuer avec les séries en niveau pour l’ARDL/bounds test.
+Sélection de l’ordre optimal (p et q) pour l’ARDL via un critère d’information (AIC, BIC, etc.)
+Tester la cointégration par le Bounds Test :
+    Si la statistique F > borne supérieure (I(1)) ⇒ relation de long terme (cointégration).
+    Si la stat < borne inférieure (I(0)) ⇒ pas de relation de long terme.
+    Sinon, résultat non concluant.
+Si cointégration détectée :
+    Estimation du modèle ECM-ARDL (modèle à correction d’erreur).
+    Interpréter le coefficient du terme d’ajustement : vitesse de retour à l’équilibre attendu négative et significative.
+    Coefficients long terme : effet permanent d’une variable sur l’autre.
+    Coefficients court terme : effets temporaires/dynamiques.
+Si pas de cointégration :
+    Se restreindre à une modélisation en différences ou court terme uniquement.
+Diagnostics post-estimation :
+    Normalité, autocorrélation, hétéroscédasticité des résidus.
+    Visualisation graphique recommandée (qqplot, ACF, histogramme des résidus).
+Interprétation :
+    Si la vitesse d’ajustement (erreur correction) est négative et significative, la relation de long terme est valide.
+    Les coefficients de court terme informent sur l’impact immédiat, ceux du long terme sur la relation d’équilibre.
+    Précision sur le traitement des séries
+
+NB: role du lag order => le nombre maximal de retards (lags) à considérer pour chacune des variables exogènes 
+(c'est-à-dire les variables explicatives, souvent notées X)
+
+Pour l'implémentation des
+    order du modèle adrl:
+        https://www.statsmodels.org/dev/examples/notebooks/generated/autoregressive_distributed_lag.html#Model-Selection
+    adrl model
+        https://www.statsmodels.org/dev/generated/statsmodels.tsa.ardl.ARDL.html#statsmodels.tsa.ardl.ARDL
+    adrl to uecm
+        https://www.statsmodels.org/dev/examples/notebooks/generated/autoregressive_distributed_lag.html#Unconstrained-Error-Correction-Models-(UECM)
+    bounting test
+        https://www.statsmodels.org/dev/examples/notebooks/generated/autoregressive_distributed_lag.html#Bounds-Testing
+    analyse du résultat des bornes 
+        https://www.statsmodels.org/stable/generated/statsmodels.tsa.ardl.UECMResults.bounds_test.html
+
+
+QUESTION => Que faire si les 2 séries ne sont pas co-intégrées?
+SOLUTIONS => 
+    1- Faire   les relations en différences, par exemple avec un modèle ARDL sans terme de correction d’erreur (ECM).
+    2- Faire le test de Johansen
+    3- Faire un modèle VAR en première différence,
+
+
+Testons la solution 1:
+Un modèle ARDL en différences est une application particulière du modèle ARDL (AutoRegressive Distributed Lag) qui 
+permet d'étudier la dynamique à court terme entre une variable dépendante et des variables explicatives, 
+quand ces séries sont non stationnaires en niveau mais stationnaires en première différence (I(1)) ou qu’il n’y a 
+pas de cointégration détectée.
+
+Qu'est-ce qu'un modèle ARDL en différences ?
+    -Le modèle ARDL classique inclut lags des variables en niveau, ce qui permet de capturer relations long terme et court terme lorsque les variables sont cointégrées.
+    -Quand il n'y a pas de cointégration, on ne peut pas estimer directement les relations de long terme, et on s’intéresse alors plutôt aux relations dynamiques à court terme.
+    -Pour cela, on modélise les variables en première différence (noté Δ), ce qui permet de travailler avec des séries stationnaires.
+    -Le modèle ARDL en différences s’apparente à un modèle dynamique où la variable dépendante en différence est expliquée par des différenciations retardées de la dépendante et des explications.
+
+
+
+Un lag significatif (ou « retard significatif ») correspond, dans un modèle de séries temporelles dynamique 
+(comme les modèles VAR, ARDL, etc.), à une variable explicative retardée (par exemple X_{t-1}, X_{t-2}, ...) 
+dont le coefficient estimé est statistiquement significatif, c’est-à-dire que sa valeur associée (p-value) est 
+inférieure à un seuil habituellement fixé à 5 % (p < 0.05)
+
+
+
+
+📊 CAS 3 : I(1) et I(1) - Configuration Classique
+✅ Cointégration : OUI - CAS OPTIMAL
+
+Tests de référence : Tous les tests classiques s'appliquent parfaitement
+
+🏆 Tests Recommandés (par ordre de préférence) :
+    Test de Johansen (plusieurs relations possibles) - Évalue la co-intégration
+    Test d'Engle-Granger (adapté si on a plus de 2 séeies)
+
+🎯 Modèles Appropriés :
+    🥇 Modèle VECM (Vector Error Correction Model) - RÉFÉRENCE
+    Modèle ECM bivarié (Error Correction Model) (si cointégration)
+    Modèle ARDL-ECM (alternative) (si cointégration)
+    Modèle VAR en différentiant les séries (si pas de cointégration)
+
+
+SCENARIO A : Séries NON Cointégrées
+    Test de causalité d'Engle-Granger
+    Modèle VAR en différences : Modélise l’effet dynamique mutuel à court terme entre les deux séries stationnaires (différenciées).
+    Modèle ARDL en différences : Possible aussi, tout comme tu as déjà pratiqué, pour voir l’impact retardé d’une variable sur l’autre.
+
+SCENARIO B : Séries Cointégrées
+    Modèle VECM (Vector Error Correction Model)
+    Relations Court Terme
+        Coefficients φᵢ, θⱼ : impacts immédiats des variations passées
+        Tests de causalité de Granger sur les différences
+    Relations Moyen/Long Terme
+        Coefficients d'ajustement λ₁, λ₂ : vitesse de retour à l'équilibre
+        Relation de cointégration β : équilibre de long terme
+
+
+
+
+Quelques ressources pour l'implémentation
+    explication sur le test de Johansen (théorie)
+        https://blog.quantinsti.com/johansen-test-cointegration-building-stationary-portfolio/
+    test de cointegration d'engle-granger (utilise AD fulleur sur les résidus d'un modèle de regression)
+        choix de regression =???
+        c	Inclut une constante (intercept)	Souvent le choix par défaut. Macroeconomie avec moyenne non nulle, pas forcément de tendance rapide. Exemple : inflation, taux d’intérêt stable.
+        ct	Constante + tendance linéaire	Séries avec tendance déterministe claire (PIB croissance, prix croissants). Tester si les données ont une dérive significative dans le temps.
+        nc	Pas de constante ni tendance	Rare en macro ; peut s’utiliser si les séries sont centrées ou déjà détrendées.
+        ctt	Constante + tendance linéaire + quadratique
+        https://www.statsmodels.org/dev/generated/statsmodels.tsa.stattools.adfuller.html
+    
+    test de johansen
+        https://www.statsmodels.org/dev/generated/statsmodels.tsa.vector_ar.vecm.coint_johansen.html
+        Quelques paramètres:
+            k_ar_diff correspond au nombre de retards en différences dans le VAR sous-jacent. Si tu le laisses à None, la fonction utilise une valeur par défaut.
+            Le test retourne deux statistiques principales :
+                Trace test : teste le nombre de vecteurs de cointégration <= r contre > r.
+                Max eigenvalue test : teste le nombre de vecteurs de cointégration = r contre r+1.
+                Interprète le test en regardant où la statistique est supérieure à la valeur critique (au seuil 5%).
+            det_order	=> Description	Usage recommandé pour macro FREDAPI
+                -1	Pas de constante ni tendance	Rare, pour séries centrées
+                0	Constante sans tendance dans cointégration	Souvent choix par défaut pour macro (FRED API)
+                1	Constante + tendance linéaire	Si tendance déterministe visible dans les séries
+                2	Constante + tendance quadratique	Très rare
+                CHOIX => det_order = 0
+        Modèle avec constante dans la cointégration (terme constant dans la relation de long terme), mais pas de tendance linéaire
+        C’est la spécification la plus courante en macroéconomie, notamment pour des séries de type PIB, inflation, taux d’intérêt où on admet une moyenne non nulle mais pas forcément une tendance structurée.
+
+        SYNTHESE
+        Test	            Avantage clé	                            Limitations	                                            Verdict dans ton cas (résultats divergents)
+        Engle-Granger	    Simple, adapté au cas bivarié	            Un seul vecteur détecté, sensible à spécification	    Ne détecte pas de cointégration (résidus non stationnaires)
+        Johansen	        Multivarié, détecte plusieurs vecteurs	    Plus sensible à choix de paramètres, plus complexe	    Détecte un vecteur de cointégration, préférable scientifiquement
+
+
+COMPARAISON Engler et Johansen (https://mpra.ub.uni-muenchen.de/75967/1/MPRA_paper_75967.pdf)
+    Critère	                        Explication
+    Robustesse et puissance	        Johansen est plus robuste, surtout avec plusieurs variables et séries macro complexes
+    Simplicité et diagnostic	    Engle-Granger est simple, rapide, mais limité (un seul vecteur, sensible à la spécification)
+    Nature des séries	            Johansen mieux adapté si plusieurs vecteurs ou effets dynamiques
+    Taille de l’échantillon	        Johansen nécessite un échantillon plus grand pour de bons résultats
+    Spécification correcte	        Johansen demande choix de det_order et lags bien choisis, sinon biais possible
+    Cas pratique	                Si Johansen détecte une cointégration mais Engle-Granger non, il est probable que Johansen soit plus valable scientifiquement
+CONCLUSIONS:
+    Privilégie le test de Johansen pour tes séries macro FRED API, en particulier si :
+    Tes séries sont au moins deux variables I(1) dans un système VAR
+    Tu suspectes plusieurs vecteurs de cointégration ou relations complexes
+    Vérifie ta spécification dans Johansen : det_order, nombre optimal de lags (via sélection VAR), qualité des données.
+
+
+COMPARAISON ENTRE VAR en différence et ADRL en différences
+Critères	                         VAR en différences	                                      ARDL en différences
+Taille d’échantillon	             Nécessite généralement plus de données	                  Plus efficace avec petits échantillons
+Flexibilité des retards	             Retards identiques pour toutes les variables	          Retards spécifiques par variable
+Nombre de variables	                 Adapté aux modèles multivariés	                          Souvent utilisé pour un endogène vs quelques exogènes
+Complexité estimations	             Modèle complet, estimation simultanée	                  Estimation plus simple (MCO) mais potentiellement plus de tests de spécification
+Interprétation causalités	         Analyse complète des interactions	                      Analyse plus ciblée sur relations spécifiques
+Usage en macroéconomie	             Classique pour dynamiques multivariées stationnaires	  Fréquent pour séries avec intégration mixte ou différences
+CONCLUSIONS:
+    -Sur base scientifique, si tu as deux variables seulement et un échantillon assez restreint, un modèle ARDL 
+        en différences peut être avantageux pour capturer les retards spécifiques et faciliter l’interprétation.
+    -Si tu souhaites une analyse plus systématique des interactions dynamiques et/ou un système multivarié plus large, 
+        un VAR en différences est souvent préférée
+
+
+
+Modèle VECM
+    *Dès qu’au moins une relation de cointégration est détectée entre tes séries I(1) (par test de Johansen ou Engle-Granger), 
+    le VECM est la méthode scientifiquement appropriée pour modéliser à la fois :
+        -L’ajustement à long terme (retour vers la relation d’équilibre)
+        -La dynamique à court terme (interactions immédiates entre les variations des séries)
+
+    *Paramètre => determinisc
+    Ce paramètre indique si tu inclus une constante et/ou une tendance dans :
+        La relation de cointégration (équilibre long terme)
+        Les équations en différences (court terme)
+        Les choix courants (nomenclature statsmodels) sont :
+            "co" : constante dans la relation de cointégration seulement (à privilégier pour macroéconomie, très utilisé)
+            "ci" : constante dans l'équation en différences uniquement
+            "lo" : constante dans la relation de cointégration et dans l'équation en différences
+    CHOIX: 2 cas possibles
+        1-Si tes séries croissent autour d’un niveau stable ou présentent simplement un niveau moyen non nul, 
+        utilise "co" (constante dans la cointégration) ;
+        2-Si tu observes une tendance linéaire déterministe forte dans les niveaux des séries (ex. : PIB réel, population),
+        teste "lo" ou inclue une tendance, mais cela est plus rare pour des séries économiques déjà transformées (comme log ou inflation) ;
+    
+    *Paramètre =>rank
+    Le rang de cointégration r correspond au nombre de relations d’équilibre à long terme
+        Par exemple, pour deux séries : r = 0 (pas de cointégration), r = 1 (une relation d’équilibre), 
+        r = 2 (cas limite, extrêmement rare : les deux séries sont elles-mêmes stationnaires)
+
+    Sélection auto du maxlags
+        https://www.statsmodels.org/dev/generated/statsmodels.tsa.vector_ar.vecm.select_order.html
+    Sélection du rank de cointégration 
+        https://www.statsmodels.org/dev/generated/statsmodels.tsa.vector_ar.vecm.select_coint_rank.html
+    Modèle VECM
+        https://www.statsmodels.org/dev/generated/statsmodels.tsa.vector_ar.vecm.VECM.html
+    Tuto utile 
+        https://www.numberanalytics.com/blog/vecm-python-implementation-guide
+    
+
+
+
+🎯 SYNTHÈSE : ARBRE DÉCISIONNEL POUR MACROÉCONOMIE
+SÉRIES MACROÉCONOMIQUES (PIB, Inflation, Chômage, etc.)
+│
+├── I(0) + I(0) → Régression OLS + Corrélation
+│
+├── I(0) + I(1) → ARDL Bounds Test ⭐
+│
+├── I(1) + I(1) → Johansen/VECM ⭐⭐⭐ (OPTIMAL)
+│
+├── I(1) + I(2) → ARDL Bounds Test (après vérification I(2))
+│
+└── I(2) + I(2) → ⚠️ VÉRIFIER D'ABORD les ruptures structurelles
+
+
+
+
+
+
+
+
+
