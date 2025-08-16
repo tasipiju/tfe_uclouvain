@@ -339,7 +339,7 @@ detecter les paquets et les extraire d'un env virtuel
     #pip freeze > requirements.txt
 
 installer des paquets dans un env virtuel
-    #pip install -m requirements
+    #pip install -m requirements.txt
 
 lister les paquets dans un env virtuel
     #pip list
