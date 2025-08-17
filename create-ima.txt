@@ -1,0 +1,19 @@
+STEOPS de création des images
+
+STEP1 => ATTENTION à ces commandes, je les utilisent car mes images prennent des giga d'espace disque et je n'ai pas assez
+    netoyage containers 
+        #docker container prune
+
+    netoyage des images
+        #docker image prune -a
+    
+    nettoyage totale (ATTENTION)
+        #docker system prune
+
+
+STEP2 => crétion de l'image (macropredictdashboard)
+    #docker build -t macropredictdashboard .
+
+
+STEP3 => Tester l'image en local
+    #docker run -p 8080:8080 macropredictdashboard

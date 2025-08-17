@@ -1,25 +1,24 @@
 
 #INFORMATIONS GLOBALES
 #local
-    #nom de l'image docker => macroecopredictdashboard
+    #nom de l'image docker => macropredictdashboard
 #google cloud
-    #Numéro du projet chez google => 168421726119
-    #nom du pojet chez goole => macroecopredictdashboard
-    #id projetct chez google => peak-system-469311-h7
+    #Numéro du projet chez google => 278148998185
+    #nom du pojet chez goole => tfe-uclouvain
+    #id projetct chez google => macropredictdashboard
 
 #VOICI LES STEPS DE DEPLOYEMENT DU GLCLOUD
 
 #STEP 1 => Connecte-toi à Google Cloud
 gcloud auth login
 gcloud config set project [ID_DE_TON_PROJET]       
-    #application => gcloud config set project peak-system-469311-h7
+    #application => gcloud config set project macropredictdashboard
 
 #STEP 2 => Active les APIs Cloud Run et Container Registry
 gcloud services enable run.googleapis.com containerregistry.googleapis.com
 
 #STEP 3 => Tager l'image docker
-docker tag streamlit-app gcr.io/[ID_DE_TON_PROJET]/streamlit-app
-    #application => docker tag macroecopredictdashboard gcr.io/peak-system-469311-h7/macroecopredictdashboard
+docker tag [NOM_DOCKER_IMAGE] gcr.io/[ID_DE_TON_PROJET]/[NOM_DOCKER_IMAGE]
 
 #STEP 4 => configurer docker sur gcloud (avec vérification)
 gcloud auth configure-docker
@@ -27,15 +26,19 @@ gcloud auth list
 gcloud config set account tatchousigha@gmail.com
 
 #STEP5 => pousser l'image sur gcloud
-docker push gcr.io/ton-projet/ton-image
-    #application => docker push gcr.io/peak-system-469311-h7/macroecopredictdashboard
+docker push gcr.io/[ID_DE_TON_PROJET]/[NOM_DOCKER_IMAGE]
 
 #STEP 6 => déployement de l'application
 #documentation de la commande => https://cloud.google.com/sdk/gcloud/reference/run/deploy
-#=> application => gcloud run deploy macroecopredictdashboard --image gcr.io/peak-system-469311-h7/macroecopredictdashboard --platform managed --region europe-west1 --allow-unauthenticated --memory 8Gi --cpu 4 --timeout 3600 --concurrency 1 --max-instances 3 --port 8080
-SOLUTION FINALE
-       https://macroecopredictdashboard-168421726119.europe-west1.run.app
+#=> application => gcloud run deploy macropredictdashboard --image gcr.io/macropredictdashboard/macropredictdashboard --platform managed --region europe-west1 --allow-unauthenticated --memory 8Gi --cpu 4 --timeout 3600 --concurrency 80 --max-instances 50 --port 8080
+
+SOLUTION FINALE => https://macropredictdashboard-278148998185.europe-west1.run.app
+    
 
 #ERREURRRRRR:
     1-les fichiers stattiques ne se chargent pas
     2-le component streamlit_option_menu ne permet pas l'affichage du menu
+
+
+
+
