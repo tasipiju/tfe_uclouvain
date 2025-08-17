@@ -1,0 +1,17 @@
+# Ignorer les environnements virtuels
+venv/
+.env
+.memoire/
+
+# Ignorer les fichiers de configuration Python
+__pycache__/
+
+# Ignorer les modèles Python compilés
+*.ckpt
+*.pkl
+*.h5
+*.pyc
+
+# Ignorer les fichiers de cache
+__pycache__/
+tuner_dir/
