@@ -55,7 +55,7 @@ def menu():
     with col2:
         st.subheader("Visualisation et Prévision macro (FRED)", anchor=False, divider=True)
    
-    #separatoeur
+    #separateur
     st.markdown("---")
 
     #menu de gauche
