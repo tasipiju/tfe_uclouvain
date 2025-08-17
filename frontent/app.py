@@ -42,30 +42,26 @@ from bivar import bivaraite_plot
 
 
 
-
 def menu():
     """Configuration du menu principal"""
-    #barre de menu à droite
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        path_folder = os.getcwd()
-        path_folder_image = os.path.join(path_folder, "uclouvain-logo.png")
-        st.image(path_folder_image, width=100)
-    
-    with col2:
-        st.subheader("Visualisation et Prévision macro (FRED)", anchor=False, divider=True)
-   
-    #separateur
-    st.markdown("---")
+    #barre de menu à gauche
+    st.sidebar.header("Menu principal")
+
+    #titre de l'application (au centre)
+    st.subheader("Visualisation et Prévision macroéconomique (Fred API)", anchor=False, divider=True)
 
     #menu de gauche
+    pages = ["Données", "Analyse univariée", "Analyse bivariée"]
+    
+    if "menu_selection" not in st.session_state:
+        st.session_state.menu_selection = pages[0]  # première option par défaut
+
     with st.sidebar:
-        selected = option_menu("Menu", ["Données", "Analyse univariée", "Analyse bivariée"],
-            icons=['file-earmark-text', 'bar-chart-line', 'bar-chart-line'],
-            menu_icon="cast",
-            default_index=0)
-        
-    return selected
+        for page in pages:
+            if st.button(page):
+                st.session_state.menu_selection = page
+    
+    return st.session_state.menu_selection
 
 
 
@@ -77,7 +73,7 @@ def main():
 
     #affichage des données
     if selected == "Données":
-        st.subheader("Affichage et analyse des données d'une série temporelle")
+        st.subheader("Données => affichage et analyse des données d'une série temporelle")
         id_serie = st.sidebar.text_input("Entrer l'ID d'une série à visualiser. Exemples : GNPCA, CPIAUCSL, EXJPUS, CORESTICKM159SFRBATL, ect.")
         
         if 'show_data_display' not in st.session_state:
@@ -97,7 +93,7 @@ def main():
         
     #analyse univariée
     elif selected == "Analyse univariée":
-        st.subheader("Analyse univariée et prévision")
+        st.subheader("Analyse univariée => prévision d'une série temporelle")
 
         id_serie = st.sidebar.text_input("Entrez l'ID de la série à modeliser/prédire: GNPCA, CPIAUCSL, EXJPUS, CORESTICKM159SFRBATL, ect.")
         model = st.sidebar.selectbox(
@@ -133,7 +129,7 @@ def main():
 
     #analyse bivariée
     elif selected == "Analyse bivariée":
-        st.subheader("Analyse bivariée de 2 séries temporelles")
+        st.subheader("Analyse bivariée => analyse de la relation entre 2 séries temporelles")
 
         id_serie_1 = st.sidebar.text_input("Entrez l'ID de la série 1.")
         id_serie_2 = st.sidebar.text_input("Entrez l'ID de la série 2.")

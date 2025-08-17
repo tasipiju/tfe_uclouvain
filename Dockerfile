@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     unzip \
     git \
+    npm \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -29,7 +30,13 @@ RUN pip install --upgrade pip setuptools wheel
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY .streamlit/ ./.streamlit/
+
 COPY . .
+
+RUN useradd --create-home --shell /bin/bash appuser
+RUN chown -R appuser:appuser /app
+USER appuser
 
 EXPOSE 8080
 

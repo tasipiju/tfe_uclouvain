@@ -1,4 +1,25 @@
 [server]
 headless = true
-enableCORS = false                          # à tester, si tu as des soucis CORS
-enableXsrfProtection = false                # à tester si nécessaire
+enableCORS = false
+enableXsrfProtection = false
+port = 8080
+address = "0.0.0.0"
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+serverPort = 8080
+
+[theme]
+base = "dark"
+
+[client]
+caching = true
+displayEnabled = true
+
+# Optimisations pour Cloud Run
+[server.fileWatcher]
+type = "none"
+
+[logger]
+level = "info"
