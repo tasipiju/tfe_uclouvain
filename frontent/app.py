@@ -48,7 +48,7 @@ def menu():
     st.sidebar.header("Menu principal")
 
     #titre de l'application (au centre)
-    st.subheader("Visualisation et Prévision macroéconomique (Fred API)", anchor=False, divider=True)
+    st.subheader("Visualisation prévision macroéconomique (Fred API)", anchor=False, divider=True)
 
     #menu de gauche
     pages = ["Données", "Analyse univariée", "Analyse bivariée"]
